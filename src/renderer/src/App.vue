@@ -35,11 +35,7 @@ watch(
   () => {
     if (attrs.adder) {
       adder = setInterval(() => {
-        if (attrs.index < attrs.max_index) {
-          attrs.index++
-        } else {
-          attrs.index = 0
-        }
+        next_img()
       }, 10000)
     } else {
       clearInterval(adder)
@@ -50,6 +46,10 @@ watch(
 const next_img = () => {
   // console.log(ipcRenderer);
   // ipcRenderer.send('quit')  // TODO: 通信; 想要通信需要现在preload暴露相应对象, 然后调用send方法发送消息
+  if (attrs.random) {
+    attrs.index = Math.floor(Math.random() * attrs.max_index)
+    return
+  }
   if (attrs.index < attrs.max_index) {
     attrs.index++
   } else {
