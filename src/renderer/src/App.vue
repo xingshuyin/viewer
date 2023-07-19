@@ -85,8 +85,8 @@ const previous_img = () => {
       </div>
     </el-drawer>
     <img src="./assets/fc.png" @click="attrs.drawer = !attrs.drawer" class="open-btn">
-    <img src="./assets/right1.png" @click="next_img" class="next">
-    <img src="./assets/left1.png" @click="previous_img" class="previous">
+    <img src="./assets/ll.png" @click="next_img" class="next">
+    <img src="./assets/rr.png" @click="previous_img" class="previous">
     <div class="bg" :style="{ backgroundImage: `url(${decodeURI(attrs.data[attrs.index])})` }"></div>
     <div class="switch_index">{{ attrs.index }}</div>
     <!-- <el-slider v-model="attrs.index" :max="attrs.max_index" class="switch_index" vertical height="60%" /> -->
