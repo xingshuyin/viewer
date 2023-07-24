@@ -1,6 +1,9 @@
 <script setup>
-import { onBeforeMount, onBeforeUnmount, reactive, watch } from 'vue'
+import { onBeforeMount, onBeforeUnmount, onMounted, reactive, watch } from 'vue'
+import { ElMessage } from 'element-plus'
+import ttime from './components/t-time.vue'
 import { Star, ArrowDownBold, ArrowUpBold } from '@element-plus/icons-vue'
+// import fs from 'fs'
 // import { images } from "./assets/data";
 const datas = import.meta.glob('../src/assets/json/**.json');
 const datas_keys = Object.keys(datas);
@@ -12,16 +15,24 @@ const attrs = reactive({
   max_index: 1,
   random: false,
   adder: false,
-  drawer: false
+  drawer: false,
+  data_push: null,
+  data_push_name: '',
+  data_push_show: false,
 })
 let adder
 onBeforeUnmount(() => {
   clearInterval(adder)
 })
-console.log(electron, api);
+onMounted(() => {
+  if (localStorage.getItem('index')) attrs.index = localStorage.getItem('index')
+  if (localStorage.getItem('set')) attrs.set = localStorage.getItem('set')
+  if (localStorage.getItem('max_index')) attrs.max_index = localStorage.getItem('max_index')
+})
 watch(
   () => attrs.set,
   () => {
+    localStorage.setItem('set', attrs.set)
     datas[attrs.set]().then((res) => {
       attrs.data = res['default']
       attrs.index = 0
@@ -30,6 +41,12 @@ watch(
   },
   { immediate: true }
 )
+watch(() => attrs.index, () => {
+  localStorage.setItem('index', attrs.index)
+})
+watch(() => attrs.max_index, () => {
+  localStorage.setItem('max_index', attrs.max_index)
+})
 watch(
   () => attrs.adder,
   () => {
@@ -65,7 +82,27 @@ const previous_img = () => {
     attrs.index = attrs.max_index
   }
 }
-</script>
+const save = () => {
+  console.log(attrs.set);
+  if (datas_keys.indexOf('./assets/json/' + attrs.data_push_name + '.json') == -1) {
+    fs.writeFile('src/renderer/src/assets/json/' + attrs.data_push_name + '.json', attrs.data_push, function (err) {
+      if (err) {
+        console.log(err)
+      } else {
+        ElMessage({
+          message: '文件已添加到本地',
+        })
+      }
+    })
+  } else {
+    ElMessage({
+      message: '文件已存在',
+    })
+  }
+
+}
+</script>   
+
 
 <template>
   <div class="m">
@@ -78,6 +115,7 @@ const previous_img = () => {
       <div class="buttons">
         <el-switch v-model="attrs.random" class="switch_random" active-text="随机" />
         <el-switch v-model="attrs.adder" class="adder" active-text="自增" />
+        <!-- <el-button type="primary" @click="attrs.data_push_show = !attrs.data_push_show">导入</el-button> -->
       </div>
       <div :style="{ backgroundColor: attrs.set == i ? 'yellow' : '' }" v-for="i, index in datas_keys" :key="i"
         @click="attrs.set = i">
@@ -89,9 +127,25 @@ const previous_img = () => {
     <img src="./assets/rr.png" @click="previous_img" class="previous">
     <div class="bg" :style="{ backgroundImage: `url(${decodeURI(attrs.data[attrs.index])})` }"></div>
     <div class="switch_index">{{ attrs.index }}</div>
-    <!-- <el-slider v-model="attrs.index" :max="attrs.max_index" class="switch_index" vertical height="60%" /> -->
+    <!-- <el-slider v-model="attrs.index" :max="attrs.max_index" class="switch_slider" vertical height="60%" /> -->
     <el-image class="viewer" style="width: 100%; height: 100%" :src="decodeURI(attrs.data[attrs.index])" fit="contain"
-      lazy @click="click_img" />
+      lazy @click="1" />
+    <el-dialog v-model="attrs.data_push_show" title="导入" width="80%">
+      <el-input v-model="attrs.data_push_name" placeholder="名称" />
+      <el-input v-model="attrs.data_push" :rows="15" type="textarea" placeholder='[
+          "https://50da81cb39dbb6fd8a9b3c7e1e24ab18962b37a2.jpg",
+          "https://f8e6ed499389da1ba2728565005209b2.jpeg",
+        ]' />
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="attrs.data_push_show = false">取消</el-button>
+          <el-button type="primary" @click="save">
+            添加
+          </el-button>
+        </span>
+      </template>
+    </el-dialog>
+    <ttime class="time"></ttime>
   </div>
 </template>
 
@@ -104,6 +158,13 @@ const previous_img = () => {
   margin: 0;
   padding: 0;
   border: 0;
+}
+
+.time {
+  position: absolute;
+  right: 50px;
+  top: 10px;
+  z-index: 99;
 }
 
 .m {

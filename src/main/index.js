@@ -26,6 +26,21 @@ function createWindow() {
     // console.log(e, data)  # 输出没用
     app.quit()
   })
+  //接受来自渲染进程的消息
+  ipcMain.on('save_to_json', (data, name) => {
+    let fs = require('fs')
+    //json数组
+    //数组转json字符串
+    let jsonObj = JSON.stringify(data)
+    fs.writeFile('../renderer/src/assets/json/' + 'name' + '.json', jsonObj, function (err) {
+      if (err) {
+        console.log(err)
+      } else {
+        console.log('file success！！！')
+      }
+    })
+  })
+
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }

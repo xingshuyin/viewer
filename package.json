@@ -21,6 +21,7 @@
     "@electron-toolkit/utils": "^1.0.2",
     "electron-updater": "^5.3.0",
     "element-plus": "^2.3.8",
+    "moment": "^2.29.4",
     "sass": "^1.63.6"
   },
   "devDependencies": {
